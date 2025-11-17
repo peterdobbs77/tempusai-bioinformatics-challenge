@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 
-VEP_API_URL = 'https://grch37.rest.ensembl.org/variant_effect/vep/human/'
+VEP_API_URL = 'https://grch37.rest.ensembl.org/vep/human/'
 
 vcf_reader = vcfpy.Reader(open('challenge_data.vcf', 'r'))
 
@@ -15,24 +15,27 @@ for record in vcf_reader:
     ref = record.REF
     alt = record.ALT[0] # assuming for now only one alt allele
     # TODO: revisit alts
+    # alt = ",".join(str(_alt) for _alt in record.ALT)
 
-    # 1. Depth of sequence coverage at site of variation
+    # 1. "DP": Depth of sequence coverage at site of variation
     depth = record.INFO.get('DP', None)
+    # 2. "AD": Number of reads supporting the variant
     allelic_depth = record.INFO.get('AD', None)
 
     if depth and allelic_depth:
-        # 2. Number of reads supporting the variant
-        num_reads = allelic_depth[1]
-
         # 3. Percentage of reads supporting the variant
         #       versus those supporting reference reads
-        pct_variant = (num_reads / depth) * 100 if depth > 0 else None
+        ref_depth = allelic_depth[0]
+        alt_depth = allelic_depth[1] if len(allelic_depth) > 0 else 0
+        total_depth = ref_depth + alt_depth
+
+        pct_variant = (alt_depth / total_depth) * 100 if total_depth > 0 else 0
     else:
-        num_reads = pct_variant = None
+        ref_depth = alt_depth = pct_variant = None
     
     # 4. Query Ensemble VEP API
     vep_params = {
-        'variant': f'{chrom}-{pos}-{ref}-{alt}',
+        'region': f'{chrom}:{pos}-{pos}:{ref}/{alt}',
         'content-type': 'application/json'
     }
 
@@ -44,9 +47,20 @@ for record in vcf_reader:
 
     # Parse response
     if response.ok:
+        with open("script_response.txt", "a") as fp:
+            fp.write("\n")
+            fp.write(response)
         vep_data = response.json()
         gene = vep_data[0]['transcript_consequences'][0]['gene_symbol']
         effect_type = vep_data[0]['transcript_consequences'][0]['consequence_terms'][0]
+
+        # gene = vep_data.get('genes', [{'id': 'N/A'}])[0]['id'] if vep_data else 'N/A'
+        # variant_type = vep_data.get('variant_class', 'N/A') if vep_data else 'N/A'
+        # effect = vep_data.get('most_severe_consequence', 'N/A') if vep_data else 'N/A'
+
+        
+        # 5. Minor Allele Frequency (MAF)
+        # TODO
     else:
         gene = effect_type = None
     
@@ -57,7 +71,8 @@ for record in vcf_reader:
         'Reference': ref,
         'Alternate': alt,
         'Depth': depth,
-        'Reads Supporting Variant': num_reads,
+        'Ref Depth': ref_depth,
+        'Alt Depth': alt_depth,
         'Percentage Supporting Variant': pct_variant,
         'Gene': gene,
         'Effect Type': effect_type
