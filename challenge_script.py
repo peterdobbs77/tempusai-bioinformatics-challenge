@@ -34,13 +34,12 @@ for record in vcf_reader:
         ref_depth = alt_depth = pct_variant = None
     
     # 4. Query Ensemble VEP API
+    vep_extension = f"region/{chrom}:{pos}/{alt.value}"
     vep_params = {
-        'region': f'{chrom}:{pos}-{pos}:{ref}/{alt}',
         'content-type': 'application/json'
     }
-
     try:
-        response = requests.get(VEP_API_URL, params=vep_params)
+        response = requests.get(VEP_API_URL+vep_extension, params=vep_params)
     except Exception as e:
         print(e)
         break
@@ -53,29 +52,31 @@ for record in vcf_reader:
         vep_data = response.json()
         gene = vep_data[0]['transcript_consequences'][0]['gene_symbol']
         effect_type = vep_data[0]['transcript_consequences'][0]['consequence_terms'][0]
+        most_severe_consequence = vep_data[0]['most_severe_consequence']
 
         # gene = vep_data.get('genes', [{'id': 'N/A'}])[0]['id'] if vep_data else 'N/A'
         # variant_type = vep_data.get('variant_class', 'N/A') if vep_data else 'N/A'
         # effect = vep_data.get('most_severe_consequence', 'N/A') if vep_data else 'N/A'
 
-        
         # 5. Minor Allele Frequency (MAF)
         # TODO
     else:
-        gene = effect_type = None
+        gene = effect_type = most_severe_consequence = None
     
     # Record the annotations
     annotations.append({
         'Chromosome': chrom,
         'Position': pos,
         'Reference': ref,
-        'Alternate': alt,
+        'Alternate': alt.value,
+        'Alternate Type': alt.type,
         'Depth': depth,
         'Ref Depth': ref_depth,
         'Alt Depth': alt_depth,
         'Percentage Supporting Variant': pct_variant,
         'Gene': gene,
-        'Effect Type': effect_type
+        'Effect Type': effect_type,
+        'Most Severe Consequence': most_severe_consequence
     })
 
 
