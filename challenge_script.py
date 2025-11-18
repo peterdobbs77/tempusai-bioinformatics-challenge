@@ -78,7 +78,7 @@ for record in vcf_reader:
         'Depth': depth,
         'Allele Frequency': record.INFO.get('AF', None),
         'Ref Depth': ref_depth,
-        'Alt Depth': alt_depth,
+        'Alt Depth': alt_depth[0],
         'Percentage Supporting Variant': pct_variant,
         'Count Supporting Variant': variant_count,
         'Gene': gene,

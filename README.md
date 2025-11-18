@@ -18,6 +18,12 @@ Be sure to include the annotated
 variants in a csv/tsv file. Note that work will be assessed based on quality of code,
 documentation, and problem solving more-so than the annotations themselves.
 
+## Prerequisites
+
+You need [challenge_data.vcf](./challenge_data.vcf), Python 3.12+, and a variety of python libraries.
+
 ## Implementation
 
 See [challenge_playbook](./challenge_playbook.ipynb) for an outline of how I am approaching the challenge. The full script is written up as [challenge_script](./challenge_script.py).
+
+A sample result can be found at [annotated_variants.csv](./annotated_variants.csv)
