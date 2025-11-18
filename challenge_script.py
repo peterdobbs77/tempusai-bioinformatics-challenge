@@ -54,13 +54,14 @@ for record in vcf_reader:
         #     fp.write("\n")
         #     fp.write(json.dump(response.json()))
         vep_data = response.json()
-        gene = vep_data[0]['transcript_consequences'][0]['gene_symbol']
-        effect_type = vep_data[0]['transcript_consequences'][0]['consequence_terms'][0]
-        most_severe_consequence = vep_data[0]['most_severe_consequence']
 
-        # gene = vep_data.get('genes', [{'id': 'N/A'}])[0]['id'] if vep_data else 'N/A'
-        # variant_type = vep_data.get('variant_class', 'N/A') if vep_data else 'N/A'
-        # effect = vep_data.get('most_severe_consequence', 'N/A') if vep_data else 'N/A'
+        if 'transcript_consequences' in vep_data[0]:
+            gene = vep_data[0]['transcript_consequences'][0]['gene_symbol']
+            effect_type = vep_data[0]['transcript_consequences'][0]['consequence_terms'][0]
+        else:
+            gene = effect_type = None
+
+        most_severe_consequence = vep_data[0]['most_severe_consequence']
 
         # 5. Minor Allele Frequency (MAF)
         # TODO
