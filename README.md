@@ -17,3 +17,7 @@ documentation is available here: [Ensembl GRCh37 Rest API](https://grch37.rest.e
 Be sure to include the annotated
 variants in a csv/tsv file. Note that work will be assessed based on quality of code,
 documentation, and problem solving more-so than the annotations themselves.
+
+## Implementation
+
+See [challenge_playbook](./challenge_playbook.ipynb) for an outline of how I am approaching the challenge. The full script is written up as [challenge_script](./challenge_script.py).

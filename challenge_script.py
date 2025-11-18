@@ -15,24 +15,27 @@ for record in vcf_reader:
     pos = record.POS
     ref = record.REF
     alt = record.ALT[0] # assuming for now only one alt allele
-    # TODO: revisit alts
+    # TODO: revisit alts here and below for `alt_depth`
     # alt = ",".join(str(_alt) for _alt in record.ALT)
 
     # 1. "DP": Depth of sequence coverage at site of variation
     depth = record.INFO.get('DP', None)
-    # 2. "AD": Number of reads supporting the variant
-    allelic_depth = record.INFO.get('AD', None)
 
-    if depth and allelic_depth:
-        # 3. Percentage of reads supporting the variant
-        #       versus those supporting reference reads
-        ref_depth = allelic_depth[0]
-        alt_depth = allelic_depth[1] if len(allelic_depth) > 0 else 0
-        total_depth = ref_depth + alt_depth
-
-        pct_variant = (alt_depth / total_depth) * 100 if total_depth > 0 else 0
+    # 3. Percentage of reads supporting the variant
+    #       versus those supporting reference reads
+    ref_depth = record.INFO.get('RO', None)
+    alt_depth = record.INFO.get('AO', None)
+    if ref_depth and alt_depth:
+        total_depth = ref_depth + alt_depth[0] # NOTE: This number should be same as `depth` above
+        pct_variant = (alt_depth[0] / total_depth) * 100 if total_depth > 0 else 0
     else:
-        ref_depth = alt_depth = pct_variant = None
+        pct_variant = None
+    
+    # 2. Number of reads supporting the variant
+    if depth and pct_variant:
+        variant_count = depth*pct_variant
+    else:
+        variant_coun = None
     
     # 4. Query Ensemble VEP API
     vep_extension = f"region/{chrom}:{pos}/{alt.value}"
@@ -72,9 +75,11 @@ for record in vcf_reader:
         'Alternate': alt.value,
         'Alternate Type': alt.type,
         'Depth': depth,
+        'Allele Frequency': record.INFO.get('AF', None),
         'Ref Depth': ref_depth,
         'Alt Depth': alt_depth,
         'Percentage Supporting Variant': pct_variant,
+        'Count Supporting Variant': variant_count,
         'Gene': gene,
         'Effect Type': effect_type,
         'Most Severe Consequence': most_severe_consequence
