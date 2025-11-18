@@ -1,6 +1,7 @@
 import vcfpy
 import pandas as pd
 import requests
+import json
 
 
 VEP_API_URL = 'https://grch37.rest.ensembl.org/vep/human/'
@@ -46,9 +47,9 @@ for record in vcf_reader:
 
     # Parse response
     if response.ok:
-        with open("script_response.txt", "a") as fp:
-            fp.write("\n")
-            fp.write(response)
+        # with open("script_response.txt", "a") as fp:
+        #     fp.write("\n")
+        #     fp.write(json.dump(response.json()))
         vep_data = response.json()
         gene = vep_data[0]['transcript_consequences'][0]['gene_symbol']
         effect_type = vep_data[0]['transcript_consequences'][0]['consequence_terms'][0]
