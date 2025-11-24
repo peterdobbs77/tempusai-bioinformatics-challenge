@@ -90,5 +90,5 @@ for record in vcf_reader:
 # Convert annotations to DataFrame
 df_annotations = pd.DataFrame(annotations)
 
-# Output to CSV or VCF (depending on preference)
+# Output to CSV
 df_annotations.to_csv('annotated_variants.csv', index=False)
