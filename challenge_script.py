@@ -62,12 +62,12 @@ for record in vcf_reader:
             gene = effect_type = None
 
         most_severe_consequence = vep_data[0]['most_severe_consequence']
-
-        # 5. Minor Allele Frequency (MAF)
-        # TODO
     else:
         gene = effect_type = most_severe_consequence = None
     
+    # 5. Minor Allele Frequency (MAF)
+    allele_frequency = record.INFO.get('AF', None)
+
     # Record the annotations
     annotations.append({
         'Chromosome': chrom,
@@ -76,7 +76,7 @@ for record in vcf_reader:
         'Alternate': alt.value,
         'Alternate Type': alt.type,
         'Depth': depth,
-        'Allele Frequency': record.INFO.get('AF', None),
+        'Allele Frequency': allele_frequency,
         'Ref Depth': ref_depth,
         'Alt Depth': alt_depth[0],
         'Percentage Supporting Variant': pct_variant,
